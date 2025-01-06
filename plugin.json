@@ -1,6 +1,6 @@
 {
-  "name": "Pub/Sub Export",
-  "url": "https://github.com/PostHog/pubsub-plugin",
+  "name": "Google Pub/Sub Export",
+  "url": "https://github.com/cowrywise/pubsub-plugin",
   "description": "Sends events to a Pub/Sub topic on ingestion.",
   "main": "index.ts",
   "posthogVersion": ">= 1.25.0",
