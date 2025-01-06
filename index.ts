@@ -30,7 +30,7 @@ export const setupPlugin: PubSubPlugin['setupPlugin'] = async (meta) => {
 
         // topic exists
         await global.pubSubTopic.getMetadata()
-    } catch (error) {
+    } catch (error: any) {
         // some other error? abort!
         if (!error.message.includes("NOT_FOUND")) {
             throw new Error(error)
@@ -39,7 +39,7 @@ export const setupPlugin: PubSubPlugin['setupPlugin'] = async (meta) => {
 
         try {
             await global.pubSubTopic.create()
-        } catch (error) {
+        } catch (error: any) {
             // a different worker already created the table
             if (!error.message.includes('ALREADY_EXISTS')) {
                 throw error
@@ -81,13 +81,18 @@ export async function exportEvents(events: PluginEvent[], { global, config }: Pl
                 people_set: $set || {},
                 people_set_once: $set_once || {},
             }
-            return Buffer.from(JSON.stringify(message))
+
+            // Attributes to be sent with the pub/sub message
+            const attributes = {
+                event
+            }
+            return {data: Buffer.from(JSON.stringify(message)), attributes}
         })
 
         const start = Date.now()
         await Promise.all(
-            messages.map((dataBuf) =>
-                global.pubSubTopic.publish(dataBuf).then((messageId) => {
+            messages.map((message) =>
+                global.pubSubTopic.publishMessage(message).then((messageId) => {
                     return messageId
                 })
             )
@@ -99,7 +104,7 @@ export async function exportEvents(events: PluginEvent[], { global, config }: Pl
                 end / 1000
             } seconds.`
         )
-    } catch (error) {
+    } catch (error: any) {
         console.error(
             `Error publishing ${events.length} ${events.length > 1 ? 'events' : 'event'} to ${config.topicId}: `,
             error
